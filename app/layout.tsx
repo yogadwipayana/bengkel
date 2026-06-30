@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
-import { Sidebar } from "@/components/sidebar";
-import { Header } from "@/components/header";
+import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -29,11 +28,7 @@ export default function RootLayout({
   return (
     <html lang="id" className={`${jakarta.variable} ${jetbrains.variable}`}>
       <body className="min-h-screen bg-slate-50 font-sans antialiased">
-        <Sidebar />
-        <div className="ml-60">
-          <Header />
-          <main className="p-8">{children}</main>
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

@@ -1,5 +1,22 @@
-import { Building2, Percent, Receipt, Bell, Users, Shield } from "lucide-react";
+import Link from "next/link";
+import { Building2, Percent, Receipt, Bell, Users, ChevronRight, ScrollText } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { users } from "@/lib/data";
+
+const managementLinks = [
+  {
+    href: "/pengaturan/pengguna",
+    icon: Users,
+    label: "Pengguna & Role",
+    desc: `${users.length} pengguna · matrix hak akses per role`,
+  },
+  {
+    href: "/pengaturan/log",
+    icon: ScrollText,
+    label: "Log Aktivitas",
+    desc: "Audit trail login & aktivitas pengguna",
+  },
+];
 
 const settingsGroups = [
   {
@@ -86,6 +103,26 @@ export default function PengaturanPage() {
             </div>
           );
         })}
+      </div>
+
+      <h2 className="mb-3 mt-8 text-sm font-semibold text-slate-900">Manajemen Lainnya</h2>
+      <div className="grid grid-cols-2 gap-4">
+        {managementLinks.map(({ href, icon: Icon, label, desc }) => (
+          <Link
+            key={href}
+            href={href}
+            className="group flex items-start gap-4 rounded-lg border border-slate-200 bg-white p-5 transition-all hover:border-coral-200 hover:shadow-sm"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-coral-50 text-coral-500">
+              <Icon size={18} strokeWidth={2} />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-slate-900">{label}</h3>
+              <p className="mt-1 text-xs text-slate-500">{desc}</p>
+            </div>
+            <ChevronRight size={16} className="mt-3 text-slate-400 transition-transform group-hover:translate-x-0.5 group-hover:text-coral-500" />
+          </Link>
+        ))}
       </div>
     </div>
   );

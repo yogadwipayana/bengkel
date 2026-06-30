@@ -5,7 +5,7 @@ import { Wrench, Mail, Lock, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   return (
-    <div className="-m-8 flex min-h-screen items-center justify-center bg-slate-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-md">
         {/* Brand */}
         <div className="mb-8 flex items-center justify-center gap-3">

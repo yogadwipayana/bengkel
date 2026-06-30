@@ -1,6 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import { Plus, Phone, MapPin } from "lucide-react";
 import { pelanggan, kendaraan } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
+import { Modal, ModalCancelButton, ModalSubmitButton } from "@/components/modal";
+import { Field, Input, Select, Textarea } from "@/components/form";
+import { ResultDialog } from "@/components/result-dialog";
 import { cn } from "@/lib/utils";
 
 const LOYALTY_STYLES = {
@@ -11,6 +17,15 @@ const LOYALTY_STYLES = {
 };
 
 export default function PelangganPage() {
+  const [open, setOpen] = useState(false);
+  const [done, setDone] = useState(false);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setOpen(false);
+    setDone(true);
+  }
+
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
@@ -18,7 +33,10 @@ export default function PelangganPage() {
         title="Pelanggan"
         subtitle={`${pelanggan.length} pelanggan terdaftar`}
         action={
-          <button className="flex items-center gap-2 rounded-md bg-coral-400 px-4 py-2 text-sm font-medium text-white hover:bg-coral-500">
+          <button
+            onClick={() => setOpen(true)}
+            className="flex items-center gap-2 rounded-md bg-coral-400 px-4 py-2 text-sm font-medium text-white hover:bg-coral-500"
+          >
             <Plus size={16} /> Tambah Pelanggan
           </button>
         }
@@ -67,6 +85,47 @@ export default function PelangganPage() {
           );
         })}
       </div>
+
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Tambah Pelanggan"
+        subtitle="Daftarkan pelanggan baru ke sistem"
+        footer={
+          <>
+            <ModalCancelButton onClick={() => setOpen(false)} />
+            <ModalSubmitButton form="form-pelanggan" />
+          </>
+        }
+      >
+        <form id="form-pelanggan" onSubmit={handleSubmit} className="space-y-4">
+          <Field label="Nama Lengkap">
+            <Input name="nama" placeholder="Mis. Putu Andika" required />
+          </Field>
+          <Field label="No. Telepon">
+            <Input name="telp" type="tel" placeholder="0812xxxxxxx" required />
+          </Field>
+          <Field label="Alamat">
+            <Textarea name="alamat" placeholder="Jl. ..." required />
+          </Field>
+          <Field label="Loyalitas">
+            <Select name="loyalitas" defaultValue="Reguler">
+              <option>Reguler</option>
+              <option>Silver</option>
+              <option>Gold</option>
+              <option>Platinum</option>
+            </Select>
+          </Field>
+        </form>
+      </Modal>
+
+      <ResultDialog
+        open={done}
+        variant="success"
+        title="Pelanggan Tersimpan"
+        message="Data pelanggan baru berhasil ditambahkan."
+        onClose={() => setDone(false)}
+      />
     </div>
   );
 }
