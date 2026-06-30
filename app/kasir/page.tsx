@@ -11,16 +11,25 @@ import {
 } from "@/lib/data";
 import { StatusBadge } from "@/components/status-badge";
 import { PageHeader } from "@/components/page-header";
+import { ResultDialog, type ResultVariant } from "@/components/result-dialog";
 import { formatRupiah } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 type Metode = "tunai" | "qris" | "transfer" | "dp";
 
 export default function KasirPage() {
-  const readyWO = workOrder.filter((w) => w.status === "selesai");
-  const [selectedId, setSelectedId] = useState<string | null>(readyWO[0]?.id || null);
+  const allReady = workOrder.filter((w) => w.status === "selesai");
+  const [paidIds, setPaidIds] = useState<string[]>([]);
+  const readyWO = allReady.filter((w) => !paidIds.includes(w.id));
+  const [selectedId, setSelectedId] = useState<string | null>(allReady[0]?.id || null);
   const [metode, setMetode] = useState<Metode>("tunai");
   const [diskon, setDiskon] = useState(0);
+  const [uangDiterima, setUangDiterima] = useState(0);
+  const [result, setResult] = useState<{
+    variant: ResultVariant;
+    title: string;
+    message: React.ReactNode;
+  } | null>(null);
 
   const wo = readyWO.find((w) => w.id === selectedId);
   const customer = wo ? getPelanggan(wo.pelangganId) : null;
@@ -31,6 +40,53 @@ export default function KasirPage() {
   const subtotal = subtotalJasa + subtotalSparepart;
   const ppn = Math.round(subtotal * 0.11);
   const total = subtotal + ppn - diskon;
+  const kembalian = uangDiterima - total;
+
+  function handleConfirm() {
+    if (!wo) return;
+    if (total <= 0) {
+      setResult({
+        variant: "error",
+        title: "Pembayaran Gagal",
+        message: "Total tagihan tidak valid. Periksa kembali diskon yang dimasukkan.",
+      });
+      return;
+    }
+    if (metode === "tunai" && uangDiterima < total) {
+      setResult({
+        variant: "error",
+        title: "Uang Kurang",
+        message: (
+          <>
+            Uang diterima <span className="font-mono">{formatRupiah(uangDiterima)}</span> kurang dari
+            total <span className="font-mono">{formatRupiah(total)}</span>.
+          </>
+        ),
+      });
+      return;
+    }
+    setResult({
+      variant: "success",
+      title: "Pembayaran Berhasil",
+      message: (
+        <div className="space-y-1">
+          <div>
+            {wo.noWO} · {formatRupiah(total)} via {metode.toUpperCase()}
+          </div>
+          {metode === "tunai" && kembalian > 0 && (
+            <div>
+              Kembalian: <span className="font-mono font-semibold">{formatRupiah(kembalian)}</span>
+            </div>
+          )}
+        </div>
+      ),
+    });
+    setPaidIds((prev) => [...prev, wo.id]);
+    const next = readyWO.find((w) => w.id !== wo.id);
+    setSelectedId(next?.id || null);
+    setDiskon(0);
+    setUangDiterima(0);
+  }
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -199,7 +255,38 @@ export default function KasirPage() {
                 ))}
               </div>
 
-              <button className="mt-5 flex w-full items-center justify-center gap-2 rounded-md bg-coral-400 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-coral-500">
+              {metode === "tunai" && (
+                <div className="mt-4 space-y-2 rounded-md bg-slate-50 px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-slate-700">Uang Diterima</label>
+                    <input
+                      type="number"
+                      value={uangDiterima || ""}
+                      onChange={(e) => setUangDiterima(Number(e.target.value) || 0)}
+                      placeholder="0"
+                      className="w-40 rounded border border-slate-200 bg-white px-3 py-1.5 text-right font-mono text-sm tabular focus:border-coral-400 focus:outline-none"
+                    />
+                  </div>
+                  {uangDiterima > 0 && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-500">Kembalian</span>
+                      <span
+                        className={cn(
+                          "font-mono font-semibold tabular",
+                          kembalian < 0 ? "text-coral-500" : "text-emerald-600"
+                        )}
+                      >
+                        {formatRupiah(kembalian)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <button
+                onClick={handleConfirm}
+                className="mt-5 flex w-full items-center justify-center gap-2 rounded-md bg-coral-400 px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-coral-500"
+              >
                 <CheckCircle2 size={18} />
                 Konfirmasi Pembayaran {formatRupiah(total)}
               </button>
@@ -211,6 +298,15 @@ export default function KasirPage() {
           </div>
         )}
       </div>
+
+      <ResultDialog
+        open={result !== null}
+        variant={result?.variant || "success"}
+        title={result?.title || ""}
+        message={result?.message}
+        actionLabel="Selesai"
+        onClose={() => setResult(null)}
+      />
     </div>
   );
 }

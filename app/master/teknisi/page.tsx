@@ -1,8 +1,23 @@
+"use client";
+
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { teknisi } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
+import { Modal, ModalCancelButton, ModalSubmitButton } from "@/components/modal";
+import { Field, Input } from "@/components/form";
+import { ResultDialog } from "@/components/result-dialog";
 
 export default function TeknisiPage() {
+  const [open, setOpen] = useState(false);
+  const [done, setDone] = useState(false);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setOpen(false);
+    setDone(true);
+  }
+
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
@@ -10,7 +25,10 @@ export default function TeknisiPage() {
         title="Teknisi"
         subtitle={`${teknisi.length} teknisi aktif`}
         action={
-          <button className="flex items-center gap-2 rounded-md bg-coral-400 px-4 py-2 text-sm font-medium text-white hover:bg-coral-500">
+          <button
+            onClick={() => setOpen(true)}
+            className="flex items-center gap-2 rounded-md bg-coral-400 px-4 py-2 text-sm font-medium text-white hover:bg-coral-500"
+          >
             <Plus size={16} /> Tambah Teknisi
           </button>
         }
@@ -46,6 +64,36 @@ export default function TeknisiPage() {
           </div>
         ))}
       </div>
+
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Tambah Teknisi"
+        subtitle="Daftarkan teknisi baru"
+        footer={
+          <>
+            <ModalCancelButton onClick={() => setOpen(false)} />
+            <ModalSubmitButton form="form-teknisi" />
+          </>
+        }
+      >
+        <form id="form-teknisi" onSubmit={handleSubmit} className="space-y-4">
+          <Field label="Nama Lengkap">
+            <Input name="nama" placeholder="Mis. Kadek Surya" required />
+          </Field>
+          <Field label="Keahlian" hint="Pisahkan dengan koma">
+            <Input name="keahlian" placeholder="Mesin, Kelistrikan, Rem" required />
+          </Field>
+        </form>
+      </Modal>
+
+      <ResultDialog
+        open={done}
+        variant="success"
+        title="Teknisi Tersimpan"
+        message="Data teknisi baru berhasil ditambahkan."
+        onClose={() => setDone(false)}
+      />
     </div>
   );
 }

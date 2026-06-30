@@ -269,3 +269,116 @@ export const STATUS_ORDER: WOStatus[] = ["antri", "diagnosis", "perbaikan", "tes
 export function getStatusIndex(status: WOStatus): number {
   return STATUS_ORDER.indexOf(status);
 }
+
+// ── Modul 1.2: Pengguna & Keamanan ───────────────────────────────
+
+export const roles = ["Super Admin", "Admin", "Kasir", "Mekanik"] as const;
+export type Role = (typeof roles)[number];
+
+export interface User {
+  id: string;
+  nama: string;
+  email: string;
+  role: Role;
+  aktif: boolean;
+  lastLogin: string;
+}
+
+export const users: User[] = [
+  { id: "u1", nama: "Juli", email: "juli@suryamotor.id", role: "Admin", aktif: true, lastLogin: "2 jam lalu" },
+  { id: "u2", nama: "Indra", email: "indra@suryamotor.id", role: "Super Admin", aktif: true, lastLogin: "5 menit lalu" },
+  { id: "u3", nama: "Dipta", email: "dipta@suryamotor.id", role: "Admin", aktif: true, lastLogin: "1 jam lalu" },
+  { id: "u4", nama: "Yoga", email: "yoga@suryamotor.id", role: "Admin", aktif: true, lastLogin: "Kemarin" },
+  { id: "u5", nama: "Made Kasir", email: "made.kasir@suryamotor.id", role: "Kasir", aktif: true, lastLogin: "20 menit lalu" },
+  { id: "u6", nama: "Wayan Kasir", email: "wayan.kasir@suryamotor.id", role: "Kasir", aktif: false, lastLogin: "3 hari lalu" },
+  { id: "u7", nama: "I Gede Surya", email: "gede.surya@suryamotor.id", role: "Mekanik", aktif: true, lastLogin: "45 menit lalu" },
+  { id: "u8", nama: "Kadek Bagus", email: "kadek.bagus@suryamotor.id", role: "Mekanik", aktif: true, lastLogin: "Kemarin" },
+];
+
+export const modulList = [
+  { kode: "1.1", nama: "Pengaturan & Konfigurasi" },
+  { kode: "1.2", nama: "Pengguna & Keamanan" },
+  { kode: "1.3", nama: "Master Data" },
+  { kode: "1.4", nama: "Pembelian" },
+  { kode: "1.5", nama: "Inventori & Stok" },
+  { kode: "1.6", nama: "Operasional Servis" },
+  { kode: "1.7", nama: "Kasir & Pembayaran" },
+  { kode: "1.8", nama: "Laporan & Dashboard" },
+  { kode: "1.9", nama: "CRM" },
+];
+
+// true = ada akses, false = ditolak
+export const rolePermissions: Record<Role, Record<string, boolean>> = {
+  "Super Admin": Object.fromEntries(modulList.map((m) => [m.kode, true])),
+  Admin: Object.fromEntries(modulList.map((m) => [m.kode, m.kode !== "1.1"])),
+  Kasir: Object.fromEntries(modulList.map((m) => [m.kode, m.kode === "1.6" || m.kode === "1.7"])),
+  Mekanik: Object.fromEntries(modulList.map((m) => [m.kode, m.kode === "1.5" || m.kode === "1.6"])),
+};
+
+export interface LoginLog {
+  id: string;
+  timestamp: string;
+  user: string;
+  ip: string;
+  status: "success" | "failed";
+  device: string;
+}
+
+export const loginLogs: LoginLog[] = [
+  { id: "ll1", timestamp: "2026-06-30T10:42:00", user: "Juli", ip: "192.168.1.45", status: "success", device: "Chrome 130 / Windows" },
+  { id: "ll2", timestamp: "2026-06-30T10:20:00", user: "Made Kasir", ip: "192.168.1.51", status: "success", device: "Chrome 130 / Windows" },
+  { id: "ll3", timestamp: "2026-06-30T09:58:00", user: "I Gede Surya", ip: "192.168.1.62", status: "success", device: "Safari 17 / iPhone" },
+  { id: "ll4", timestamp: "2026-06-30T09:37:00", user: "Indra", ip: "192.168.1.40", status: "success", device: "Firefox 131 / macOS" },
+  { id: "ll5", timestamp: "2026-06-30T09:15:00", user: "Wayan Kasir", ip: "182.1.66.204", status: "failed", device: "Chrome 129 / Android" },
+  { id: "ll6", timestamp: "2026-06-30T09:14:00", user: "Wayan Kasir", ip: "182.1.66.204", status: "failed", device: "Chrome 129 / Android" },
+  { id: "ll7", timestamp: "2026-06-30T08:50:00", user: "Dipta", ip: "192.168.1.48", status: "success", device: "Edge 130 / Windows" },
+  { id: "ll8", timestamp: "2026-06-30T08:32:00", user: "Yoga", ip: "192.168.1.55", status: "success", device: "Chrome 130 / macOS" },
+  { id: "ll9", timestamp: "2026-06-30T08:05:00", user: "Kadek Bagus", ip: "192.168.1.63", status: "success", device: "Chrome 130 / Android" },
+  { id: "ll10", timestamp: "2026-06-29T17:22:00", user: "Juli", ip: "192.168.1.45", status: "success", device: "Chrome 130 / Windows" },
+  { id: "ll11", timestamp: "2026-06-29T16:40:00", user: "Made Kasir", ip: "192.168.1.51", status: "success", device: "Chrome 130 / Windows" },
+  { id: "ll12", timestamp: "2026-06-29T14:11:00", user: "Unknown", ip: "103.94.12.77", status: "failed", device: "Chrome 128 / Linux" },
+  { id: "ll13", timestamp: "2026-06-29T11:05:00", user: "Indra", ip: "192.168.1.40", status: "success", device: "Firefox 131 / macOS" },
+  { id: "ll14", timestamp: "2026-06-29T09:30:00", user: "I Gede Surya", ip: "192.168.1.62", status: "success", device: "Safari 17 / iPhone" },
+  { id: "ll15", timestamp: "2026-06-29T08:12:00", user: "Dipta", ip: "192.168.1.48", status: "success", device: "Edge 130 / Windows" },
+];
+
+export type LogAction =
+  | "Create"
+  | "Update"
+  | "Delete"
+  | "Approve"
+  | "Process Payment"
+  | "Login"
+  | "Logout";
+
+export interface ActivityLog {
+  id: string;
+  timestamp: string;
+  user: string;
+  action: LogAction;
+  target: string;
+  modul: string;
+}
+
+export const activityLogs: ActivityLog[] = [
+  { id: "al1", timestamp: "2026-06-30T10:35:00", user: "Juli", action: "Create", target: "WO-2026-0142", modul: "Operasional" },
+  { id: "al2", timestamp: "2026-06-30T10:28:00", user: "Wayan Kasir", action: "Process Payment", target: "INV-2026-0089", modul: "Kasir" },
+  { id: "al3", timestamp: "2026-06-30T10:12:00", user: "Made Kasir", action: "Process Payment", target: "INV-2026-0088", modul: "Kasir" },
+  { id: "al4", timestamp: "2026-06-30T09:55:00", user: "Indra", action: "Update", target: "Pelanggan p3", modul: "Master Data" },
+  { id: "al5", timestamp: "2026-06-30T09:42:00", user: "Dipta", action: "Approve", target: "PO-2026-0035", modul: "Pembelian" },
+  { id: "al6", timestamp: "2026-06-30T09:30:00", user: "I Gede Surya", action: "Update", target: "WO-2026-0143", modul: "Operasional" },
+  { id: "al7", timestamp: "2026-06-30T09:18:00", user: "Yoga", action: "Create", target: "Sparepart sp10", modul: "Master Data" },
+  { id: "al8", timestamp: "2026-06-30T09:05:00", user: "Indra", action: "Delete", target: "Kendaraan k0 (duplikat)", modul: "Master Data" },
+  { id: "al9", timestamp: "2026-06-30T08:52:00", user: "Dipta", action: "Create", target: "PO-2026-0036", modul: "Pembelian" },
+  { id: "al10", timestamp: "2026-06-30T08:40:00", user: "Juli", action: "Update", target: "Stok sp3", modul: "Inventori" },
+  { id: "al11", timestamp: "2026-06-30T08:31:00", user: "Made Kasir", action: "Login", target: "Sesi #4821", modul: "Pengguna" },
+  { id: "al12", timestamp: "2026-06-30T08:15:00", user: "Kadek Bagus", action: "Update", target: "WO-2026-0140", modul: "Operasional" },
+  { id: "al13", timestamp: "2026-06-29T17:20:00", user: "Juli", action: "Approve", target: "PO-2026-0033", modul: "Pembelian" },
+  { id: "al14", timestamp: "2026-06-29T16:48:00", user: "Indra", action: "Create", target: "User u8", modul: "Pengguna" },
+  { id: "al15", timestamp: "2026-06-29T15:30:00", user: "Yoga", action: "Update", target: "Jenis Servis j5", modul: "Master Data" },
+  { id: "al16", timestamp: "2026-06-29T14:22:00", user: "Made Kasir", action: "Process Payment", target: "INV-2026-0087", modul: "Kasir" },
+  { id: "al17", timestamp: "2026-06-29T13:10:00", user: "Dipta", action: "Delete", target: "PO-2026-0030 (batal)", modul: "Pembelian" },
+  { id: "al18", timestamp: "2026-06-29T11:35:00", user: "I Gede Surya", action: "Update", target: "WO-2026-0138", modul: "Operasional" },
+  { id: "al19", timestamp: "2026-06-29T10:05:00", user: "Indra", action: "Update", target: "Role Kasir", modul: "Pengguna" },
+  { id: "al20", timestamp: "2026-06-29T08:30:00", user: "Juli", action: "Create", target: "WO-2026-0137", modul: "Operasional" },
+];

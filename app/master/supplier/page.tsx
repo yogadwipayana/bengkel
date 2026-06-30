@@ -1,8 +1,23 @@
+"use client";
+
+import { useState } from "react";
 import { Plus, Phone } from "lucide-react";
 import { supplier } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
+import { Modal, ModalCancelButton, ModalSubmitButton } from "@/components/modal";
+import { Field, Input } from "@/components/form";
+import { ResultDialog } from "@/components/result-dialog";
 
 export default function SupplierPage() {
+  const [open, setOpen] = useState(false);
+  const [done, setDone] = useState(false);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setOpen(false);
+    setDone(true);
+  }
+
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
@@ -10,7 +25,10 @@ export default function SupplierPage() {
         title="Supplier"
         subtitle={`${supplier.length} supplier terdaftar`}
         action={
-          <button className="flex items-center gap-2 rounded-md bg-coral-400 px-4 py-2 text-sm font-medium text-white hover:bg-coral-500">
+          <button
+            onClick={() => setOpen(true)}
+            className="flex items-center gap-2 rounded-md bg-coral-400 px-4 py-2 text-sm font-medium text-white hover:bg-coral-500"
+          >
             <Plus size={16} /> Tambah Supplier
           </button>
         }
@@ -35,6 +53,39 @@ export default function SupplierPage() {
           </div>
         ))}
       </div>
+
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Tambah Supplier"
+        subtitle="Daftarkan vendor sparepart baru"
+        footer={
+          <>
+            <ModalCancelButton onClick={() => setOpen(false)} />
+            <ModalSubmitButton form="form-supplier" />
+          </>
+        }
+      >
+        <form id="form-supplier" onSubmit={handleSubmit} className="space-y-4">
+          <Field label="Nama Supplier">
+            <Input name="nama" placeholder="Mis. PT Astra Honda Bali" required />
+          </Field>
+          <Field label="Kontak">
+            <Input name="kontak" placeholder="0361xxxxxx" required />
+          </Field>
+          <Field label="Produk">
+            <Input name="produk" placeholder="Mis. Sparepart Honda, Oli" required />
+          </Field>
+        </form>
+      </Modal>
+
+      <ResultDialog
+        open={done}
+        variant="success"
+        title="Supplier Tersimpan"
+        message="Data supplier baru berhasil ditambahkan."
+        onClose={() => setDone(false)}
+      />
     </div>
   );
 }

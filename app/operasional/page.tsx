@@ -1,12 +1,36 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Plus, ChevronRight } from "lucide-react";
-import { workOrder, getPelanggan, getKendaraan, getTeknisi } from "@/lib/data";
+import {
+  workOrder,
+  getPelanggan,
+  getKendaraan,
+  getTeknisi,
+  pelanggan,
+  kendaraan,
+  jenisServis,
+  teknisi,
+} from "@/lib/data";
 import { StatusBadge } from "@/components/status-badge";
 import { ServiceProgressStrip } from "@/components/service-progress-strip";
 import { PageHeader } from "@/components/page-header";
+import { Modal, ModalCancelButton, ModalSubmitButton } from "@/components/modal";
+import { Field, Input, Select, Textarea } from "@/components/form";
+import { ResultDialog } from "@/components/result-dialog";
 import { formatRupiah, formatDateTime } from "@/lib/utils";
 
 export default function OperasionalPage() {
+  const [open, setOpen] = useState(false);
+  const [done, setDone] = useState(false);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setOpen(false);
+    setDone(true);
+  }
+
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
@@ -14,7 +38,10 @@ export default function OperasionalPage() {
         title="Operasional Servis"
         subtitle="Kelola work order dari kedatangan pelanggan hingga selesai"
         action={
-          <button className="flex items-center gap-2 rounded-md bg-coral-400 px-4 py-2 text-sm font-medium text-white hover:bg-coral-500">
+          <button
+            onClick={() => setOpen(true)}
+            className="flex items-center gap-2 rounded-md bg-coral-400 px-4 py-2 text-sm font-medium text-white hover:bg-coral-500"
+          >
             <Plus size={16} />
             Work Order Baru
           </button>
@@ -97,6 +124,68 @@ export default function OperasionalPage() {
           </tbody>
         </table>
       </div>
+
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Work Order Baru"
+        subtitle="Buat work order untuk kendaraan yang masuk"
+        size="lg"
+        footer={
+          <>
+            <ModalCancelButton onClick={() => setOpen(false)} />
+            <ModalSubmitButton form="form-wo" label="Buat WO" />
+          </>
+        }
+      >
+        <form id="form-wo" onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+          <Field label="Pelanggan">
+            <Select name="pelangganId" defaultValue="" required>
+              <option value="" disabled>Pilih pelanggan</option>
+              {pelanggan.map((p) => (
+                <option key={p.id} value={p.id}>{p.nama}</option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Kendaraan">
+            <Select name="kendaraanId" defaultValue="" required>
+              <option value="" disabled>Pilih kendaraan</option>
+              {kendaraan.map((k) => (
+                <option key={k.id} value={k.id}>{k.plat} — {k.merk} {k.tipe}</option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Jenis Servis">
+            <Select name="jenisServisId" defaultValue="" required>
+              <option value="" disabled>Pilih jenis servis</option>
+              {jenisServis.map((j) => (
+                <option key={j.id} value={j.id}>{j.nama}</option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Teknisi">
+            <Select name="teknisiId" defaultValue="">
+              <option value="">Belum di-assign</option>
+              {teknisi.map((t) => (
+                <option key={t.id} value={t.id}>{t.nama}</option>
+              ))}
+            </Select>
+          </Field>
+          <div className="col-span-2">
+            <Field label="Keluhan Pelanggan">
+              <Textarea name="keluhan" placeholder="Mis. Mesin berisik saat dingin..." required />
+            </Field>
+          </div>
+        </form>
+      </Modal>
+
+      <ResultDialog
+        open={done}
+        variant="success"
+        title="Work Order Dibuat"
+        message="Work order baru masuk ke antrian servis."
+        onClose={() => setDone(false)}
+      />
     </div>
   );
 }

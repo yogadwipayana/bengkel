@@ -1,5 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import { Plus, FileText, CheckCircle2, Truck, Clock } from "lucide-react";
+import { supplier } from "@/lib/data";
 import { PageHeader } from "@/components/page-header";
+import { Modal, ModalCancelButton, ModalSubmitButton } from "@/components/modal";
+import { Field, Input, Select, Textarea } from "@/components/form";
+import { ResultDialog } from "@/components/result-dialog";
 import { formatRupiah, formatDate } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +24,15 @@ const STATUS = {
 };
 
 export default function PembelianPage() {
+  const [open, setOpen] = useState(false);
+  const [done, setDone] = useState(false);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setOpen(false);
+    setDone(true);
+  }
+
   return (
     <div className="mx-auto max-w-7xl">
       <PageHeader
@@ -24,7 +40,10 @@ export default function PembelianPage() {
         title="Pembelian"
         subtitle="Kelola purchase order ke supplier"
         action={
-          <button className="flex items-center gap-2 rounded-md bg-coral-400 px-4 py-2 text-sm font-medium text-white hover:bg-coral-500">
+          <button
+            onClick={() => setOpen(true)}
+            className="flex items-center gap-2 rounded-md bg-coral-400 px-4 py-2 text-sm font-medium text-white hover:bg-coral-500"
+          >
             <Plus size={16} /> Buat PO Baru
           </button>
         }
@@ -65,6 +84,50 @@ export default function PembelianPage() {
           );
         })}
       </div>
+
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Buat PO Baru"
+        subtitle="Buat purchase order ke supplier"
+        footer={
+          <>
+            <ModalCancelButton onClick={() => setOpen(false)} />
+            <ModalSubmitButton form="form-po" label="Buat PO" />
+          </>
+        }
+      >
+        <form id="form-po" onSubmit={handleSubmit} className="space-y-4">
+          <Field label="Supplier">
+            <Select name="supplier" defaultValue="" required>
+              <option value="" disabled>Pilih supplier</option>
+              {supplier.map((s) => (
+                <option key={s.id} value={s.id}>{s.nama}</option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Tanggal Pesan">
+            <Input name="tanggal" type="date" defaultValue="2026-06-30" required />
+          </Field>
+          <Field label="Jumlah Item">
+            <Input name="items" type="number" min={1} placeholder="0" required />
+          </Field>
+          <Field label="Estimasi Total">
+            <Input name="total" type="number" min={0} placeholder="0" required />
+          </Field>
+          <Field label="Catatan">
+            <Textarea name="catatan" placeholder="Catatan tambahan (opsional)" />
+          </Field>
+        </form>
+      </Modal>
+
+      <ResultDialog
+        open={done}
+        variant="success"
+        title="PO Berhasil Dibuat"
+        message="Purchase order baru menunggu approval."
+        onClose={() => setDone(false)}
+      />
     </div>
   );
 }

@@ -12,11 +12,20 @@ import {
   BarChart3,
   Users2,
   Settings,
+  LogOut,
   Wrench as Logo,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navigation = [
+interface NavItem {
+  label: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+  modul: string;
+  children?: { label: string; href: string }[];
+}
+
+const navigation: NavItem[] = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard, modul: "1.8" },
   { label: "Master Data", href: "/master", icon: Database, modul: "1.3" },
   { label: "Pembelian", href: "/pembelian", icon: ShoppingCart, modul: "1.4" },
@@ -25,7 +34,17 @@ const navigation = [
   { label: "Kasir", href: "/kasir", icon: CreditCard, modul: "1.7" },
   { label: "Laporan", href: "/laporan", icon: BarChart3, modul: "1.8" },
   { label: "CRM", href: "/crm", icon: Users2, modul: "1.9" },
-  { label: "Pengaturan", href: "/pengaturan", icon: Settings, modul: "1.1" },
+  {
+    label: "Pengaturan",
+    href: "/pengaturan",
+    icon: Settings,
+    modul: "1.1",
+    children: [
+      { label: "Identitas & Konfigurasi", href: "/pengaturan" },
+      { label: "Pengguna & Role", href: "/pengaturan/pengguna" },
+      { label: "Log Aktivitas", href: "/pengaturan/log" },
+    ],
+  },
 ];
 
 export function Sidebar() {
@@ -48,23 +67,45 @@ export function Sidebar() {
           const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           const Icon = item.icon;
           return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "group mb-0.5 flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-                isActive
-                  ? "bg-coral-400/10 text-coral-200"
-                  : "text-slate-400 hover:bg-slate-900 hover:text-white"
+            <div key={item.href}>
+              <Link
+                href={item.href}
+                className={cn(
+                  "group mb-0.5 flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+                  isActive
+                    ? "bg-coral-400/10 text-coral-200"
+                    : "text-slate-400 hover:bg-slate-900 hover:text-white"
+                )}
+              >
+                <Icon size={16} strokeWidth={2} />
+                <span className="flex-1">{item.label}</span>
+                <span className={cn("font-mono text-[10px]", isActive ? "text-coral-300/60" : "text-slate-600")}>
+                  {item.modul}
+                </span>
+                {isActive && <span className="absolute left-0 h-5 w-0.5 rounded-r bg-coral-400" />}
+              </Link>
+              {item.children && isActive && (
+                <div className="mb-1 ml-7 space-y-0.5 border-l border-slate-800 pl-3">
+                  {item.children.map((child) => {
+                    const childActive = pathname === child.href;
+                    return (
+                      <Link
+                        key={child.href}
+                        href={child.href}
+                        className={cn(
+                          "block rounded-md px-3 py-1.5 text-[13px] transition-colors",
+                          childActive
+                            ? "text-coral-200"
+                            : "text-slate-500 hover:text-white"
+                        )}
+                      >
+                        {child.label}
+                      </Link>
+                    );
+                  })}
+                </div>
               )}
-            >
-              <Icon size={16} strokeWidth={2} />
-              <span className="flex-1">{item.label}</span>
-              <span className={cn("font-mono text-[10px]", isActive ? "text-coral-300/60" : "text-slate-600")}>
-                {item.modul}
-              </span>
-              {isActive && <span className="absolute left-0 h-5 w-0.5 rounded-r bg-coral-400" />}
-            </Link>
+            </div>
           );
         })}
       </nav>
@@ -78,6 +119,14 @@ export function Sidebar() {
             <div className="truncate text-xs font-medium text-white">Juli (Admin)</div>
             <div className="truncate text-[10px] text-slate-500">surya.motor@bengkel.id</div>
           </div>
+          <Link
+            href="/login"
+            title="Keluar"
+            aria-label="Keluar"
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-800 hover:text-coral-300"
+          >
+            <LogOut size={15} strokeWidth={2} />
+          </Link>
         </div>
       </div>
     </aside>
